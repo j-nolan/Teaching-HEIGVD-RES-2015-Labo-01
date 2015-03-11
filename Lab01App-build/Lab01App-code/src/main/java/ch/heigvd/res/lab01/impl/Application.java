@@ -1,4 +1,4 @@
-package ch.heigvd.res.lab01.impl;
+    package ch.heigvd.res.lab01.impl;
 
 import ch.heigvd.res.lab01.impl.explorers.DFSFileExplorer;
 import ch.heigvd.res.lab01.impl.transformers.CompleteFileTransformer;
@@ -16,6 +16,7 @@ import java.io.Writer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  *
@@ -92,6 +93,7 @@ public class Application implements IApplication {
        * one method provided by this class, which is responsible for storing the content of the
        * quote in a text file (and for generating the directories based on the tags).
        */
+      storeQuote(quote, "quote-" + i);
       LOG.info(quote.getSource());
       for (String tag : quote.getTags()) {
         LOG.info("> " + tag);
@@ -125,7 +127,19 @@ public class Application implements IApplication {
    * @throws IOException 
    */
   void storeQuote(Quote quote, String filename) throws IOException {
-    throw new UnsupportedOperationException("The student has not implemented this method yet.");
+    // Using quote tags, create path to file
+    String folderPath = WORKSPACE_DIRECTORY;
+    for (String tag : quote.getTags()) {
+        folderPath += "/" + tag;
+    }
+    
+    // Make folder at this path
+    new File(folderPath).mkdirs();
+    
+    // Write quote to file
+    OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(folderPath + "/" + filename + ".utf8"), "UTF-8");
+    writer.write(quote.getQuote());
+    writer.close();
   }
   
   /**
@@ -137,18 +151,21 @@ public class Application implements IApplication {
     explorer.explore(new File(WORKSPACE_DIRECTORY), new IFileVisitor() {
       @Override
       public void visit(File file) {
-        /*
-         * There is a missing piece here. Notice how we use an anonymous class here. We provide the implementation
-         * of the the IFileVisitor interface inline. You just have to add the body of the visit method, which should
-         * be pretty easy (we want to write the filename, including the path, to the writer passed in argument).
-         */
+          try {
+              // Get path with unix separators (to pass the tests...)
+              writer.write(FilenameUtils.separatorsToUnix(file.getPath()) + "\n");
+          } catch (IOException ex) {
+              // Print IOException to console
+              LOG.log(Level.SEVERE, "Could not read file path. ", ex.getMessage());
+              ex.printStackTrace();
+          }
       }
     });
   }
   
   @Override
   public String getAuthorEmail() {
-    throw new UnsupportedOperationException("The student has not implemented this method yet.");
+    return "james.nolan@heig-vd.ch";
   }
 
   @Override
